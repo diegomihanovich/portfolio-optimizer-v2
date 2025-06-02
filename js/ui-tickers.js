@@ -62,7 +62,21 @@ function handleAdd() {
   input.value = '';
   acList.innerHTML = '';
   refreshChips();
+
+  /* 🔔 Aviso al resto de módulos */
+  document.dispatchEvent(new CustomEvent('tickersChanged', {
+    detail: state.tickers
+  }));
 }
+
+/* dentro del span.onclick (cuando se quita un chip) */
+span.onclick = () => {
+  removeTicker(sym);
+  refreshChips();
+  document.dispatchEvent(new CustomEvent('tickersChanged', {
+    detail: state.tickers
+  }));
+};
 
 /* 5. Autocompletado  */
 input.addEventListener('input', async () => {
