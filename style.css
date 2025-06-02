@@ -1,0 +1,344 @@
+/* === Estilos principales (copiados de tu boceto) === */
+body{
+  background-color:#121418;color:#E0E0E0;font-family:'Inter',sans-serif;
+  margin:0;padding:15px;display:flex;flex-direction:column;align-items:center;
+  font-size:.95rem;
+}
+.app-title{font-size:1.8rem;margin-bottom:15px;}
+
+ .wizard-container {
+            width: 100%;
+            max-width: 1100px; /* Ligeramente reducido para pantallas más pequeñas */
+            margin-top: 15px; /* Reducido */
+        }
+
+        .wizard-step {
+            background-color: rgba(30, 33, 40, 0.85); /* Base para glassmorphism */
+            border: 1px solid rgba(127, 90, 240, 0.25);
+            border-radius: 12px; /* Reducido */
+            padding: 20px; /* Reducido */
+            margin-bottom: 25px; /* Reducido */
+            box-shadow: 0 6px 25px 0 rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(4px); 
+            -webkit-backdrop-filter: blur(4px);
+        }
+
+        .wizard-step h2 {
+            color: #7F5AF0;
+            border-bottom: 1px solid #7F5AF0;
+            padding-bottom: 8px; /* Reducido */
+            margin-top: 0;
+            margin-bottom: 18px; /* Reducido */
+            font-size: 1.6rem; /* Reducido */
+        }
+
+        h3 {
+            color: #A7A9BE;
+            margin-top: 15px; /* Reducido */
+            margin-bottom: 10px; /* Reducido */
+            font-size: 1.15rem; /* Reducido */
+        }
+
+        .form-group {
+            margin-bottom: 15px; /* Reducido */
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px; /* Reducido */
+            font-weight: 500;
+            font-size: 0.9rem; /* Reducido */
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="number"],
+        .form-group select {
+            width: calc(100% - 20px); /* Ajustado */
+            padding: 8px 10px; /* Reducido */
+            background-color: #1E2128;
+            border: 1px solid #3A3F4B;
+            color: #E0E0E0;
+            border-radius: 4px; /* Reducido */
+            font-size: 0.9rem; /* Reducido */
+        }
+        
+        .form-group input[type="text"]::placeholder {
+            color: #6c757d;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+        }
+
+        .input-group input[type="text"], .input-group input[type="number"] {
+            flex-grow: 1;
+        }
+
+        .input-group button {
+            margin-left: 8px; /* Reducido */
+            padding: 8px 12px; /* Reducido */
+            background-color: #7F5AF0;
+            color: white;
+            border: none;
+            border-radius: 4px; /* Reducido */
+            cursor: pointer;
+            font-size: 0.9rem; /* Reducido */
+        }
+        
+        .input-group button:hover {
+            background-color: #6A48D0;
+        }
+
+        .ticker-chip-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px; /* Reducido */
+            margin-bottom: 15px; /* Reducido */
+            max-height: 90px; /* Altura máxima, con scroll si excede */
+            overflow-y: auto;
+            padding: 5px;
+            background-color: rgba(0,0,0,0.1);
+            border-radius: 4px;
+        }
+
+        .ticker-chip {
+            padding: 6px 12px; /* Reducido */
+            border-radius: 15px; /* Reducido */
+            font-size: 0.8rem; /* Reducido */
+            font-weight: 500;
+        }
+        .sector-tech { background-color: #28A745; color: white; }
+        .sector-finance { background-color: #007BFF; color: white; }
+        .sector-energy { background-color: #FFC107; color: black; }
+        .sector-other { background-color: #6C757D; color: white; }
+
+        .visual-placeholder {
+            background-color: #1E2128;
+            border: 1px dashed #3A3F4B;
+            padding: 15px; /* Reducido */
+            text-align: center;
+            color: #A7A9BE;
+            border-radius: 6px; /* Reducido */
+            min-height: 120px; /* Reducido */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px; /* Reducido */
+            font-size: 0.85rem;
+        }
+
+        .doughnut-placeholder {
+            width: 180px; /* Reducido */
+            height: 180px; /* Reducido */
+            border-radius: 50%;
+            background-color: #1E2128;
+            border: 1px dashed #3A3F4B;
+            display: flex;
+            flex-direction: column; /* Para texto interno */
+            align-items: center;
+            justify-content: center;
+            color: #A7A9BE;
+            margin: 0 auto 15px auto; /* Reducido */
+            font-size: 0.85rem;
+        }
+         .doughnut-placeholder .score-value {
+            font-size: 1.8rem; /* Reducido */
+            color: #7F5AF0;
+            font-weight: bold;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); /* Reducido */
+            gap: 10px; /* Reducido */
+            margin-bottom: 15px; /* Reducido */
+        }
+
+        .metric-card {
+            background-color: #1E2128;
+            padding: 12px; /* Reducido */
+            border-radius: 6px; /* Reducido */
+            border: 1px solid #3A3F4B;
+            text-align: center;
+        }
+
+        .metric-card .value {
+            font-size: 1.5rem; /* Reducido */
+            font-weight: bold;
+            color: #7F5AF0;
+            margin-bottom: 3px; /* Reducido */
+        }
+
+        .metric-card .label {
+            font-size: 0.8rem; /* Reducido */
+            color: #A7A9BE;
+            margin-bottom: 5px; /* Reducido */
+        }
+        
+        .metric-card .explanation {
+            font-size: 0.7rem; /* Reducido */
+            color: #6c757d;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 10px; /* Reducido */
+        }
+        .slider-container input[type="range"] {
+            flex-grow: 1;
+            accent-color: #7F5AF0;
+        }
+        .slider-container .slider-value {
+            font-weight: bold;
+            color: #7F5AF0;
+            min-width: 35px; /* Reducido */
+            font-size: 0.9rem;
+        }
+
+        .switch-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #1E2128;
+            padding: 8px 12px; /* Reducido */
+            border-radius: 4px; /* Reducido */
+            margin-bottom: 8px; /* Reducido */
+        }
+        .switch-container label {
+            margin-bottom: 0;
+            color: #E0E0E0;
+            font-size: 0.85rem; /* Reducido */
+        }
+        .switch-container input[type="checkbox"] {
+            height: 18px; /* Reducido */
+            width: 18px; /* Reducido */
+            accent-color: #7F5AF0;
+            flex-shrink: 0; /* Evitar que se encoja */
+        }
+        .collapsible-content {
+            background-color: #1A1D24;
+            padding: 12px; /* Reducido */
+            border-radius: 0 0 4px 4px; /* Reducido */
+            margin-top: -8px; 
+            margin-bottom: 8px; /* Reducido */
+        }
+        .collapsible-content label, .collapsible-content input, .collapsible-content select {
+            font-size: 0.85rem; /* Reducido */
+        }
+        
+        .popover-trigger {
+            cursor: help;
+            color: #7F5AF0;
+            font-weight: bold;
+            margin-left: 4px; /* Reducido */
+            font-size: 0.85rem;
+        }
+
+        .step-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px; /* Reducido */
+        }
+
+        .step-navigation button {
+            padding: 10px 20px; /* Reducido */
+            background-color: #7F5AF0;
+            color: white;
+            border: none;
+            border-radius: 4px; /* Reducido */
+            cursor: pointer;
+            font-size: 0.95rem; /* Reducido */
+            font-weight: 500;
+        }
+        .step-navigation button:hover {
+            background-color: #6A48D0;
+        }
+        .step-navigation button.prev {
+            background-color: #3A3F4B;
+        }
+        .step-navigation button.prev:hover {
+            background-color: #4E5461;
+        }
+
+        .sticky-optimize-button {
+            position: fixed;
+            bottom: 20px; /* Reducido */
+            right: 20px; /* Reducido */
+            padding: 12px 25px; /* Reducido */
+            background-color: #7F5AF0;
+            color: white;
+            border: none;
+            border-radius: 30px; /* Reducido */
+            cursor: pointer;
+            font-size: 1rem; /* Reducido */
+            font-weight: bold;
+            box-shadow: 0 3px 12px rgba(127, 90, 240, 0.35);
+            z-index: 1000;
+        }
+        .sticky-optimize-button:hover {
+            background-color: #6A48D0;
+        }
+
+        .results-layout {
+            display: flex;
+            gap: 15px; /* Reducido */
+            flex-wrap: wrap; 
+        }
+        .results-layout > div {
+            flex: 1;
+            min-width: 280px; /* Reducido */
+        }
+        
+        .toast-placeholder {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            background-color: #FFC107; 
+            color: #333;
+            padding: 12px; /* Reducido */
+            border-radius: 4px; /* Reducido */
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            z-index: 1001;
+            font-size: 0.85rem;
+        }
+
+        /* Nuevas Clases para Layouts Compactos */
+        .compact-row {
+            display: flex;
+            flex-wrap: wrap; /* Permitir que se envuelvan en pantallas muy pequeñas */
+            gap: 15px; /* Espacio entre items en la fila */
+            align-items: flex-start; /* Alinear items al inicio */
+        }
+        .compact-row > div {
+            flex: 1; /* Distribuir espacio */
+            min-width: 200px; /* Mínimo antes de envolver o encoger */
+        }
+         .compact-row .form-group {
+            margin-bottom: 10px; /* Menor margen en filas compactas */
+        }
+
+        /* Ajustes específicos para Paso 1 */
+        #step-1 .visuals-row {
+            display: flex;
+            gap: 15px;
+            align-items: flex-start; /* Alinear la parte superior de los elementos */
+        }
+        #step-1 .visuals-row > div {
+            flex: 1;
+        }
+        #correlation-heatmap-container { flex-basis: 60%; } /* Dar más espacio al heatmap */
+        #diversification-score-container { flex-basis: 40%; }
+
+        /* Ajustes para Paso 2 - Agrupación de Parámetros */
+        #parameters-group-1, #parameters-group-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+ 
+
+
+/* Al final añadí un comentario para que sepas dónde termina */
