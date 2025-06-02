@@ -33,11 +33,12 @@
                 <label for="ticker-search">Buscar y Añadir Activos (Tickers)</label>
                 <div class="input-group">
                     <input type="text" id="ticker-search" placeholder="Ej: AAPL, MSFT, BTC-USD...">
-                    <button type="button" onclick="addTicker()">Añadir</button>
+                    <button type="button" id="btn-add-ticker">Añadir</button>
                 </div>
             </div>
 
             <h3>Activos Seleccionados:</h3>
+          <p id="asset-counter" style="margin-top:4px;font-size:.8rem;color:#A7A9BE"></p>
             <div class="ticker-chip-container" id="ticker-chips">
                 <span class="ticker-chip sector-tech">AAPL</span>
                 <span class="ticker-chip sector-finance">JPM</span>
@@ -205,6 +206,6 @@
   <div class="toast-placeholder" id="app-toast" style="display:none;"></div>
 
   <!-- 4️⃣  Lógica mínima -->
-  <script type="module" src="js/main.js"></script>
+  <script type="module" src="js/main.js"></script><br><script type="module" src="js/ui-tickers.js"></script>
 </body>
 </html>
