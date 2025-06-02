@@ -1,44 +1,59 @@
+/* ui-tickers.js – buscador y chips de activos
+   ------------------------------------------------------------ */
 import { state, addTicker, removeTicker } from './store.js';
-import { showToast }                        from './main.js';   // ya existe
+import { showToast }                       from './main.js';
 
-/* ---- DOM refs ---- */
-const input      = document.getElementById('ticker-search');
-const chipBox    = document.getElementById('ticker-chips');
-const addBtn     = document.getElementById('btn-add-ticker');     // le pondremos este id
-const counterP   = document.getElementById('asset-counter');      // opcional
-const acList     = document.createElement('ul');                  // lista sugerencias
+/* 1. Referencias al DOM  */
+const input    = document.getElementById('ticker-search');
+const addBtn   = document.getElementById('btn-add-ticker');
+const chipBox  = document.getElementById('ticker-chips');
+const counterP = document.getElementById('asset-counter');
+
+/* Lista UL para sugerencias  */
+const acList = document.createElement('ul');
 acList.id = 'acList';
-acList.className = 'autocomplete-list';
+acList.style.listStyle = 'none';
+acList.style.padding   = '4px 0';
+acList.style.margin    = 0;
+acList.style.position  = 'absolute';
+acList.style.background = '#1E2128';
+acList.style.border     = '1px solid #3A3F4B';
+acList.style.maxHeight  = '160px';
+acList.style.overflowY  = 'auto';
+acList.style.zIndex     = 1000;
 input.parentNode.appendChild(acList);
 
-/* ---- Autocompletado: bajamos JSON 1 sola vez ---- */
+/* 2. Descargar y cachear la lista de tickers  */
 const TICKERS_URL =
-  'https://raw.githubusercontent.com/diegomihanovich/portfolio-optimizer/main/data/company_tickers.json';
-let fullList = null;
+ 'https://raw.githubusercontent.com/diegomihanovich/portfolio-optimizer/main/data/company_tickers.json';
+
+let fullList = null;   // [{symbol:'MSFT', name:'MICROSOFT CORP'}, …]
 
 async function loadTickers() {
   if (fullList) return;
   const obj = await fetch(TICKERS_URL).then(r => r.json());
-  fullList  = Object.values(obj).map(o => o.ticker.toUpperCase());
+  fullList  = Object.values(obj).map(o => ({
+    symbol: o.ticker.toUpperCase(),
+    name  : o.title
+  }));
 }
 
-/* ---- Render chips ---- */
+/* 3. Redibuja chips + contador  */
 function refreshChips() {
   chipBox.innerHTML = '';
-  state.tickers.forEach(t => {
+  state.tickers.forEach(sym => {
     const span = document.createElement('span');
-    span.className = 'ticker-chip sector-other';   // color aleatorio opcional
-    span.textContent = t;
+    span.className = 'ticker-chip sector-other';
+    span.textContent = sym;
     span.title = 'Quitar';
-    span.onclick = () => { removeTicker(t); refreshChips(); };
+    span.onclick = () => { removeTicker(sym); refreshChips(); };
     chipBox.appendChild(span);
   });
-
-  if (counterP) counterP.textContent = `${state.tickers.length}/${state.max}`;
+  counterP.textContent = `${state.tickers.length}/${state.max}`;
   addBtn.disabled = state.tickers.length >= state.max;
 }
 
-/* ---- Añadir ticker desde input ---- */
+/* 4. Añadir ticker desde el input  */
 function handleAdd() {
   const ok = addTicker(input.value.trim());
   if (!ok) {
@@ -49,27 +64,46 @@ function handleAdd() {
   refreshChips();
 }
 
-/* ---- Eventos ---- */
+/* 5. Autocompletado  */
 input.addEventListener('input', async () => {
-  const q = input.value.trim().toUpperCase();
+  const q = input.value.trim().toLowerCase();
   acList.innerHTML = '';
   if (q.length < 2) return;
 
   await loadTickers();
-  fullList
-    .filter(s => s.includes(q))
-    .slice(0, 12)
-    .forEach(sym => {
-      const li = document.createElement('li');
-      li.textContent = sym;
-      li.onclick = () => { input.value = sym; handleAdd(); };
-      acList.appendChild(li);
-    });
+  const matches = fullList
+    .filter(t => t.symbol.toLowerCase().includes(q) ||
+                 t.name  .toLowerCase().includes(q))
+    .slice(0, 12);
+
+  matches.forEach(t => {
+    const li = document.createElement('li');
+    li.style.padding = '4px 8px';
+    li.style.cursor  = 'pointer';
+    li.textContent   = `${t.symbol} – ${t.name}`;
+    li.onmouseover   = () => li.style.background = '#3A3F4B';
+    li.onmouseout    = () => li.style.background = 'transparent';
+    li.onclick       = () => { input.value = t.symbol; handleAdd(); };
+    acList.appendChild(li);
+  });
 });
+
+/* Enter = añade lo que esté escrito o la primera sugerencia */
 input.addEventListener('keydown', e => {
-  if (e.key === 'Enter') { e.preventDefault(); handleAdd(); }
+  if (e.key !== 'Enter') return;
+  e.preventDefault();
+  const first = acList.querySelector('li');
+  if (first) { first.click(); }
+  else       { handleAdd(); }
 });
+
+/* Clic fuera del input => cerramos lista */
+document.addEventListener('click', e => {
+  if (e.target !== input) acList.innerHTML = '';
+});
+
+/* 6. Botón “Añadir” */
 addBtn.addEventListener('click', handleAdd);
 
-/* ---- init ---- */
+/* 7. Init: refrescar chips vacíos al cargar */
 refreshChips();
