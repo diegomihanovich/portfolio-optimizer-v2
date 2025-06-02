@@ -42,3 +42,11 @@ export async function updateRiskFree() {
   input.placeholder = '';
   alert('No pude actualizar la tasa libre de riesgo.');
 }
+// Hook ↻ cuando cargue la página
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('btn-rf-refresh')
+          .addEventListener('click', updateRiskFree);
+
+  // Llenar Rf apenas abra la app
+  updateRiskFree();
+});
