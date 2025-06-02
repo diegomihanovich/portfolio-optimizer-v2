@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Optimizador de Portafolio v2.4</title>
+
+  <!-- 1️⃣  Hoja de estilos -->
+  <link rel="stylesheet" href="css/style.css" />
+
+  <!-- 2️⃣  Plotly CDN (gráficos) -->
+  <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+
+  <!-- 3️⃣  Fuente Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <h1 class="app-title">Optimizador de Portafolio v2.4 (Compacto)</h1>
+
+  <!-- Copia íntegra del cuerpo de tu boceto,
+       PERO sin <style> ni <script>;
+       todo lo que estaba entre <body>…</body> lo pegas aquí tal cual -->
+  <!-- ⚠️  He dejado UNA SOLA línea como recordatorio: -->
+  <!-- ==== PEGAR AQUÍ TU ESTRUCTURA DE PASOS (wizard-container…) ==== -->
+
+<div class="wizard-container">
+
+        <div class="wizard-step" id="step-1">
+            <h2>Paso 1: Selección de Activos</h2>
+            
+            <div class="form-group">
+                <label for="ticker-search">Buscar y Añadir Activos (Tickers)</label>
+                <div class="input-group">
+                    <input type="text" id="ticker-search" placeholder="Ej: AAPL, MSFT, BTC-USD...">
+                    <button type="button" onclick="addTicker()">Añadir</button>
+                </div>
+            </div>
+
+            <h3>Activos Seleccionados:</h3>
+            <div class="ticker-chip-container" id="ticker-chips">
+                <span class="ticker-chip sector-tech">AAPL</span>
+                <span class="ticker-chip sector-finance">JPM</span>
+                <span class="ticker-chip sector-energy">XOM</span>
+            </div>
+
+            <div class="visuals-row"> <div id="correlation-heatmap-container">
+                    <h3>Heatmap Correlación <span class="popover-trigger" title="Muestra visualmente cómo se mueven los precios de tus activos entre sí.">❔</span></h3>
+                    <div class="visual-placeholder" id="correlation-heatmap" style="min-height: 180px;"> {/* Ajustada altura */}
+                        Heatmap de Correlación
+                        <br><small>Correlación Media: <span id="avg-correlation">0.XX</span></small>
+                    </div>
+                </div>
+                <div id="diversification-score-container">
+                    <h3>Nivel Diversificación <span class="popover-trigger" title="Puntaje de 0 a 100. Más alto es mejor.">❔</span></h3>
+                    <div class="doughnut-placeholder" id="diversification-score">
+                        <span class="score-value" id="diversification-score-value">75</span>
+                        <span>Score</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="step-navigation">
+                <span></span> <button type="button" class="next" onclick="goToStep(2)">Siguiente &rarr;</button>
+            </div>
+        </div>
+
+        <div class="wizard-step" id="step-2" style="display: none;">
+            <h2>Paso 2: Ajuste de Parámetros</h2>
+
+            <div id="parameters-group-1">
+                <div class="form-group">
+                    <label for="risk-free-rate">Tasa Libre de Riesgo (Rf) <span class="popover-trigger" title="Rendimiento de inversión sin riesgo.">❔</span></label>
+                    <div class="input-group">
+                        <input type="number" id="risk-free-rate" value="0.02" step="0.001">
+                        <button type="button" title="Actualizar">↻</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="investment-amount">Monto a Invertir <span class="popover-trigger" title="Capital total para pesos en moneda.">❔</span></label>
+                    <input type="number" id="investment-amount" placeholder="Ej: 10000">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="risk-slider">Nivel de Riesgo Deseado (0-100%) <span class="popover-trigger" title="Ajusta tu tolerancia al riesgo.">❔</span></label>
+                <div class="slider-container">
+                    <span style="font-size: 0.85rem;">0%</span>
+                    <input type="range" id="risk-slider" min="0" max="100" value="50" oninput="updateSliderValue(this.value)">
+                    <span style="font-size: 0.85rem;">100%</span>
+                    <span class="slider-value" id="risk-slider-value">50%</span>
+                </div>
+            </div>
+            
+            <div id="parameters-group-2">
+                <div class="form-group">
+                    <label for="data-frequency">Frecuencia Datos <span class="popover-trigger" title="Periodicidad de datos históricos.">❔</span></label>
+                    <select id="data-frequency">
+                        <option value="daily">Diaria</option>
+                        <option value="weekly">Semanal</option>
+                        <option value="monthly">Mensual</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="data-range">Rango Histórico <span class="popover-trigger" title="Período de datos históricos.">❔</span></label>
+                    <select id="data-range">
+                        <option value="1y">1 Año</option>
+                        <option value="3y">3 Años</option>
+                        <option value="5y">5 Años</option>
+                    </select>
+                </div>
+            </div>
+            
+            <h3>Configuraciones Avanzadas:</h3>
+            <div class="switch-container">
+                <label for="limit-asset-percentage">Limitar % por activo <span class="popover-trigger" title="Tope de ponderación por activo.">❔</span></label>
+                <input type="checkbox" id="limit-asset-percentage" onchange="toggleCollapse('limit-asset-input-container', this.checked)">
+            </div>
+            <div class="collapsible-content" id="limit-asset-input-container" style="display: none;">
+                 <label for="max-asset-percentage">Máximo por activo (%):</label>
+                 <input type="number" id="max-asset-percentage" value="25" min="1" max="100" placeholder="25">
+            </div>
+
+            <div class="switch-container">
+                <label for="rebalancing">Rebalanceo Automático <span class="popover-trigger" title="Reajuste periódico de ponderaciones.">❔</span></label>
+                <input type="checkbox" id="rebalancing" onchange="toggleCollapse('rebalancing-options-container', this.checked)">
+            </div>
+             <div class="collapsible-content" id="rebalancing-options-container" style="display: none;">
+                 <label for="rebalancing-frequency">Frecuencia Rebalanceo:</label>
+                 <select id="rebalancing-frequency">
+                    <option value="quarterly">Trimestral</option>
+                    <option value="annually">Anual</option>
+                 </select>
+            </div>
+
+            <div class="switch-container">
+                <label for="include-defensive-assets">Incluir Activos Defensivos <span class="popover-trigger" title="Considerar activos de baja beta/correlación.">❔</span></label>
+                <input type="checkbox" id="include-defensive-assets">
+            </div>
+
+            <div class="step-navigation">
+                <button type="button" class="prev" onclick="goToStep(1)">&larr; Anterior</button>
+                <button type="button" class="next" onclick="goToStep(3)">Siguiente &rarr;</button>
+            </div>
+        </div>
+
+        <div class="wizard-step" id="step-3" style="display: none;">
+            <h2>Paso 3: Resultados de la Optimización</h2>
+            
+            <div class="results-layout">
+                <div class="left-column">
+                    <h3>Frontera Eficiente <span class="popover-trigger" title="Gráfico de portafolios óptimos (rendimiento vs riesgo).">❔</span></h3>
+                    <div class="visual-placeholder" id="efficient-frontier-chart" style="min-height: 300px;"> {/* Altura ajustada */}
+                        Contenedor para Frontera Eficiente (Plotly)
+                    </div>
+                </div>
+
+                <div class="right-column">
+                    <h3>Distribución Óptima</h3>
+                    <div class="doughnut-placeholder" id="portfolio-weights-chart" style="width: 200px; height: 200px;"> {/* Tamaño ajustado */}
+                        Pesos (Doughnut)
+                    </div>
+
+                    <h3 style="margin-top: 15px;">Métricas Clave:</h3>
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="label">Retorno (μ) <span class="popover-trigger" title="Rendimiento esperado.">❔</span></div>
+                            <div class="value" id="metric-return">--%</div>
+                            <div class="explanation">Anual geom.</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="label">Volatilidad (σ) <span class="popover-trigger" title="Riesgo (variación).">❔</span></div>
+                            <div class="value" id="metric-volatility">--%</div>
+                            <div class="explanation">Anual std dev.</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="label">Sharpe <span class="popover-trigger" title="Retorno vs Riesgo.">❔</span></div>
+                            <div class="value" id="metric-sharpe">--</div>
+                            <div class="explanation">(μ - Rf) / σ</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="label">Beta (β) <span class="popover-trigger" title="Volatilidad vs Mercado.">❔</span></div>
+                            <div class="value" id="metric-beta">--</div>
+                            <div class="explanation">Sensibilidad</div>
+                        </div>
+                    </div>
+
+                    <h3>Exposición Sectorial <span class="popover-trigger" title="Distribución por sector.">❔</span></h3>
+                    <div class="visual-placeholder" id="sector-exposure-bar" style="min-height: 60px;"> {/* Altura ajustada */}
+                        Barra Exposición Sectorial
+                    </div>
+                </div>
+            </div>
+
+            <div class="step-navigation">
+                <button type="button" class="prev" onclick="goToStep(2)">&larr; Anterior</button>
+                </div>
+        </div>
+    </div>
+
+
+  <!-- Botón sticky -->
+  <button type="button" class="sticky-optimize-button" id="btn-optimize">Optimizar</button>
+  <!-- Toast -->
+  <div class="toast-placeholder" id="app-toast" style="display:none;"></div>
+
+  <!-- 4️⃣  Lógica mínima -->
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
