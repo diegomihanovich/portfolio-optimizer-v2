@@ -28,13 +28,32 @@ const TICKERS_URL = '/portfolio-optimizer-v2/data/company_tickers.json';
 
 let fullList = null;   // [{symbol:'MSFT', name:'MICROSOFT CORP'}, …]
 
-async function loadTickers() {
+async function loadTickers () {
   if (fullList) return;
-  const obj = await fetch(TICKERS_URL).then(r => r.json());
-  fullList  = Object.values(obj).map(o => ({
-    symbol: o.ticker.toUpperCase(),
-    name  : o.title
-  }));
+
+  try {
+    const txt = await fetch(TICKERS_URL)
+                 .then(r => {
+                   if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                   return r.text();
+                 });
+
+    /* ① Eliminamos todo char de control 0x00-0x1F salvo tab/lf/cr */
+    const clean = txt.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '');
+
+    /* ② Parseamos */
+    const obj  = JSON.parse(clean);
+
+    /* ③ Mapeamos a [{symbol,name}] */
+    fullList = Object.values(obj).map(o => ({
+      symbol : o.ticker.toUpperCase(),
+      name   : o.title
+    }));
+
+  } catch (err) {
+    console.error('tickers JSON malformado', err);
+    showToast('Error cargando la lista de activos', 'error');
+  }
 }
 
 /* 3. Redibuja chips + contador  */
