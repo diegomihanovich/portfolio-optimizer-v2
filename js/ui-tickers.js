@@ -112,3 +112,12 @@ addBtn.addEventListener('click', handleAdd);
 
 /* 7. Init: refrescar chips vacíos al cargar */
 refreshChips();
+
+span.onclick = () => {
+  removeTicker(sym);
+  refreshChips();
+  document.dispatchEvent(new CustomEvent('tickersChanged', {   // 👈 añade esto
+    detail: state.tickers
+  }));
+};
+
