@@ -24,7 +24,7 @@ acList.style.zIndex     = 1000;
 input.parentNode.appendChild(acList);
 
 /* 2. Descargar y cachear la lista de tickers  */
-const TICKERS_URL = 'data/company_tickers.json';   // ← ruta relativa al sitio
+const TICKERS_URL = '/portfolio-optimizer-v2/data/company_tickers.json';
 
 let fullList = null;   // [{symbol:'MSFT', name:'MICROSOFT CORP'}, …]
 
