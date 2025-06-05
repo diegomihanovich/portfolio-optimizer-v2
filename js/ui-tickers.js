@@ -45,12 +45,23 @@ function refreshChips() {
     span.className = 'ticker-chip sector-other';
     span.textContent = sym;
     span.title = 'Quitar';
-    span.onclick = () => { removeTicker(sym); refreshChips(); };
+
+    /* aquí dentro: borrar chip + avisar */
+    span.onclick = () => {
+      removeTicker(sym);
+      refreshChips();
+      document.dispatchEvent(new CustomEvent('tickersChanged', {
+        detail: state.tickers
+      }));
+    };
+
     chipBox.appendChild(span);
   });
+
   counterP.textContent = `${state.tickers.length}/${state.max}`;
   addBtn.disabled = state.tickers.length >= state.max;
 }
+
 
 /* 4. Añadir ticker desde el input  */
 function handleAdd() {
@@ -112,12 +123,3 @@ addBtn.addEventListener('click', handleAdd);
 
 /* 7. Init: refrescar chips vacíos al cargar */
 refreshChips();
-
-span.onclick = () => {
-  removeTicker(sym);
-  refreshChips();
-  document.dispatchEvent(new CustomEvent('tickersChanged', {   // 👈 añade esto
-    detail: state.tickers
-  }));
-};
-
