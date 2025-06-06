@@ -74,11 +74,24 @@ const store = (() => {
     );
   };
 
-  /* ---------- 4 · API pública ---------- */
-   return { getState, setTickers, setPrices, setRf, setParams,
-           addTicker, removeTicker };
+-  /* ---------- 4 · API pública ---------- */
+-   return { getState, setTickers, setPrices, setRf, setParams,
+-            addTicker, removeTicker };
++  /* ---------- 4 · API pública ---------- */
++  const api = {                     // ← agrupamos para exportar varias veces
++    state,          //  👈  añadido
++    getState, setTickers, setPrices, setRf, setParams,
++    addTicker, removeTicker
++  };
++  return api;
 
 })();
 
-/* ↓↓↓ Mantén compatibilidad con importación “default” ↓↓↓ */
-export default store;
+ /* ↓↓↓ Mantén compatibilidad con importación “default” ↓↓↓ */
+-export default store;
++export default store;               // default intacto
+
+-/* (fin de archivo) */
++/*  Exponer también exports con nombre para los módulos “viejos”  */
++export const { state, addTicker, removeTicker } = store;
+
