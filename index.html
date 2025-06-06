@@ -35,28 +35,35 @@
 
             <h3>Activos Seleccionados:</h3>
           <p id="asset-counter" style="margin-top:4px;font-size:.8rem;color:#A7A9BE"></p>
-            <div class="ticker-chip-container" id="ticker-chips">
-              </div>
+            <div class="ticker-chip-container" id="ticker-chips"></div>
 
-            <div class="visuals-row"> <div id="correlation-heatmap-container">
-                    <h3>Heatmap Correlación <span class="popover-trigger" title="Muestra visualmente cómo se mueven los precios de tus activos entre sí.">❔</span></h3>
-                    <div class="visual-placeholder" id="correlation-heatmap" style="min-height: 180px;"> 
-                        Heatmap de Correlación
-                        <br><small>Correlación Media: <span id="avg-correlation">0.XX</span></small>
-                    </div>
-                </div>
-                <div id="diversification-score-container">
-                    <h3>Nivel Diversificación <span class="popover-trigger" title="Puntaje de 0 a 100. Más alto es mejor.">❔</span></h3>
-                    <div class="doughnut-placeholder" id="diversification-score">
-                        <span class="score-value" id="diversification-score-value">75</span>
-                        <span>Score</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="step-navigation">
-                <span></span> <button type="button" class="next" onclick="goToStep(2)">Siguiente &rarr;</button>
-            </div>
+<!-- 🔽 BLOQUE VISUALES EN UNA FILA 🔽 -->
+<div class="visuals-row">
+
+  <!-- Heat-map -->
+  <div id="correlation-heatmap-container">
+    <h3>Heatmap Correlación <span class="popover-trigger" title="Muestra visualmente cómo se mueven los precios de tus activos entre sí.">❔</span></h3>
+    <div class="visual-placeholder" id="correlation-heatmap" style="min-height:180px;">
+      Heatmap de Correlación
+      <br><small>Correlación Media: <span id="avg-correlation">—</span></small>
+    </div>
+  </div>
+
+  <!-- Diversification Score -->
+  <div id="diversification-score-container">
+    <h3>Nivel Diversificación <span class="popover-trigger" title="Puntaje de 0 a 100. Más alto es mejor.">❔</span></h3>
+    <div class="doughnut-placeholder" id="diversification-score">
+      <span class="score-value" id="diversification-score-value">—</span>
+      <span>Score</span>
+    </div>
+  </div>
+
+</div> <!-- ← cierra .visuals-row -->
+
+<div class="step-navigation">
+  <span></span>
+  <button type="button" class="next" onclick="goToStep(2)">Siguiente &rarr;</button>
+</div>
         </div>
 
         <div class="wizard-step" id="step-2" style="display: none;">
@@ -198,12 +205,16 @@
   <!-- Toast -->
   <div class="toast-placeholder" id="app-toast" style="display:none;"></div>
 
-  <!-- 4️⃣  Lógica mínima -->
-  <script type="module" src="js/main.js"></script>
+<!-- 4️⃣  Lógica mínima -->
+<script type="module" src="js/main.js"></script>
 <script type="module" src="js/ui-tickers.js"></script>
 <script type="module" src="js/dataService.js"></script>
-  <script type="module" src="js/heatmap.js"></script>
 
+<!-- helpers numéricos -->
+<script type="module" src="js/stats.js"></script>
+
+<!-- heat-map (requiere Plotly + stats + dataService ya cargados) -->
+<script type="module" src="js/heatmap.js"></script>
 
 </body>
 </html>
