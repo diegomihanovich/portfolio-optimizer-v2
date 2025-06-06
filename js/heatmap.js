@@ -1,88 +1,85 @@
-/* heatmap.js – calcula matriz de correlaciones y dibuja Heatmap */
-import { fetchHistory, loadPricesFor, fetchRiskFree } from './dataService.js';
+/*  js/heatmap.js
+    Construye heat-map de correlaciones + métricas de diversificación
+-------------------------------------------------------------------- */
 
-import { showToast } from "./main.js";
-let debounceId = null;
+import store             from './store.js';
+import { loadPricesFor } from './dataService.js';
+import {
+  logReturns, corrMatrix, diversificationScore
+} from './stats.js';
 
-/* Escucha cuando cambian los tickers */
-document.addEventListener('tickersChanged', e => {
-  const tickers = e.detail;
+/* 1. Referencias a elementos del DOM */
+const divHeat = document.getElementById('correlation-heatmap');
+const spanAvg = document.getElementById('avg-correlation');
+const spanDiv = document.getElementById('diversification-score-value');
+
+/* 2. Re-dibujo bajo demanda */
+async function refreshHeatmap () {
+  const { tickers, prices } = store.state;
+
+  /* Mostrar placeholder si hay <2 activos */
   if (tickers.length < 2) {
-    clearHeatmap();
+    clearHeatmap('Añade al menos 2 activos');
     return;
   }
-  /* debounce 800 ms */
-  clearTimeout(debounceId);
-  debounceId = setTimeout(() => buildHeatmap(tickers), 800);
-});
 
-function clearHeatmap() {
-  document.getElementById('correlation-heatmap').innerHTML =
-    'Heatmap de Correlación';
-  document.getElementById('avg-correlation').textContent = '—';
-  document.getElementById('diversification-score-value').textContent = '--';
-}
-
-async function buildHeatmap(tickers) {
-  try {
-    /* 1. Descarga precios diarios */
-    const sets = await Promise.all(
-      tickers.map(t => fetchHistory(t, 'daily'))
-    );
-
-    /* 2. Rendimientos log   r_t = ln(P_t / P_{t-1}) */
-    const rets = sets.map(rows => rows.slice(1).map((r,i) => {
-      const p0 = rows[i].Close;
-      const p1 = rows[i+1].Close;
-      return Math.log(p1 / p0);
-    }));
-
-    /* 3. Alinear por longitud mínima */
-    const minLen = Math.min(...rets.map(r => r.length));
-    const aligned = rets.map(r => r.slice(-minLen));
-
-    /* 4. Matriz de correlaciones */
-    const corr = aligned.map((x,i) =>
-      aligned.map((y,j) => pearson(x,y))
-    );
-
-    /* 5. Correlación media y score */
-    const flat   = corr.flat().filter((_,i)=> i % (tickers.length+1) !== 0); // sin diag.
-    const avgR   = flat.reduce((s,v)=>s+v,0) / flat.length;
-    const score  = Math.round((1 - Math.abs(avgR)) * 100);
-
-    /* 6. Plotly heatmap */
-    Plotly.newPlot('correlation-heatmap', [{
-      z: corr,
-      x: tickers, y: tickers,
-      type: 'heatmap',
-      colorscale: 'RdBu',
-      zmin: -1, zmax: 1,
-      showscale: false
-    }], {
-      margin:{l:40,r:0,t:0,b:40},
-    }, {displayModeBar:false});
-
-    /* 7. Actualiza textos */
-    document.getElementById('avg-correlation').textContent = avgR.toFixed(2);
-    document.getElementById('diversification-score-value').textContent = score;
-
-  } catch(err) {
-    console.error(err);
-    clearHeatmap();
-    showToast('No pude calcular correlaciones', 'error');
+  /* ¿Tenemos datos OHLC para todos?  Si no, descargamos. */
+  const pending = tickers.filter(t => !prices[t]);
+  if (pending.length) {
+    await loadPricesFor(pending);
+    /* volveremos a entrar cuando pricesReady dispare de nuevo */
+    return;
   }
+
+  /* 3. Construimos series de retornos alineadas */
+  const series = tickers.map(t => ({
+    name : t,
+    rets : logReturns(prices[t])
+  }));
+
+  /* Emparejar por longitud mínima */
+  const minLen = Math.min(...series.map(s => s.rets.length));
+  series.forEach(s => { s.rets = s.rets.slice(-minLen); });
+
+  /* 4. Matriz de correlación */
+  const { matrix, avg } = corrMatrix(series);
+
+  /* 5. Plotly heat-map */
+  const data = [{
+    z      : matrix,
+    x      : tickers,
+    y      : tickers,
+    type   : 'heatmap',
+    colorscale : 'Viridis',
+    zmin   : -1,
+    zmax   : 1,
+  }];
+
+  const layout = {
+    margin: { l:40, r:40, t:30, b:40 },
+    width : 300,
+    height: 300,
+  };
+
+  Plotly.newPlot(divHeat, data, layout, { displayModeBar:false });
+
+  /* 6. KPI en pantalla */
+  spanAvg.textContent = avg.toFixed(2);
+  spanDiv.textContent = diversificationScore(avg);
 }
 
-/* ---------- helper: Pearson r ---------- */
-function pearson(x, y) {
-  const n  = x.length;
-  const mx = x.reduce((s,v)=>s+v,0) / n;
-  const my = y.reduce((s,v)=>s+v,0) / n;
-  let num=0, dx=0, dy=0;
-  for (let i=0;i<n;i++){
-    const a = x[i]-mx, b = y[i]-my;
-    num += a*b; dx += a*a; dy += b*b;
-  }
-  return num / Math.sqrt(dx*dy);
+/* Borra gráfico y muestra mensaje opcional */
+function clearHeatmap (msg = 'Heatmap de Correlación') {
+  divHeat.innerHTML = `<div style="display:grid;place-items:center;height:100%;color:#777">
+                         ${msg}
+                       </div>`;
+  spanAvg.textContent = '—';
+  spanDiv.textContent = '—';
 }
+
+/* 7. Escuchamos cambios de datos */
+document.addEventListener('tickersChanged', refreshHeatmap);
+document.addEventListener('pricesReady',   refreshHeatmap);
+
+/* 8. Init */
+clearHeatmap();
