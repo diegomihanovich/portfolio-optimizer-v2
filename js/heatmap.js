@@ -1,5 +1,5 @@
 /* heatmap.js – calcula matriz de correlaciones y dibuja Heatmap */
-import { fetchHistory } from './dataService.js';
+import { fetchHistory, loadPricesFor, fetchRiskFree } from './dataService.js';
 
 import { showToast } from "./main.js";
 let debounceId = null;
