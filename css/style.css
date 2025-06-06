@@ -339,6 +339,17 @@ body{
             margin-bottom: 15px;
         }
  
+/* Overlay mientras se descargan datos */
+body.loading::before {
+  content: "⏳ Cargando datos…";
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(0,0,0,0.5);
+  font: 600 1.2rem/1 Inter, sans-serif;
+  z-index: 2000;
+}
 
 
 /* Al final añadí un comentario para que sepas dónde termina */
