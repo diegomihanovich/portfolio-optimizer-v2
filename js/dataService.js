@@ -1,52 +1,83 @@
-/* dataService.js  –  descarga precios y tasa libre de riesgo */
+/*  js/dataService.js
+    Descarga precios OHLC de Stooq + tasa RF de FRED.
+    Cachea en localStorage y actualiza el store global
+----------------------------------------------------------- */
 
-const PROXY   = url => 'https://corsproxy.io/?' + encodeURIComponent(url);
-const FREQMAP = { daily:'d', weekly:'w', monthly:'m' };
+import store from './store.js';
 
-/* ---------- 1. Históricos de precios (Stooq) ---------- */
-export async function fetchHistory(ticker, freq = 'daily') {
-  const key = `px_${ticker}_${freq}`;
-  const cached = localStorage.getItem(key);
-  if (cached) return JSON.parse(cached);
+/* ---------- 0 · Helpers ---------- */
+const PROXY = 'https://corsproxy.io/?';
+const STQ_URL = (tkr) => `https://stooq.com/q/d/l/?s=${tkr.toLowerCase()}.us&i=d`;
+const RF_URL  = 'https://fred.stlouisfed.org/graph/fredgraph.csv?id=DTB3';
 
-  const url = `https://stooq.com/q/d/l/?s=${ticker}.US&i=${FREQMAP[freq]}`;
-  const csv = await fetch(PROXY(url)).then(r => r.text());
-  const { data } = Papa.parse(csv, { header:true, dynamicTyping:true });
+/* Wrapper fetch con retry (2 intentos) */
+async function fetchRetry (url, tries = 2) {
+  try { return await fetch(url); }
+  catch (err) {
+    if (tries <= 1) throw err;
+    await new Promise(r => setTimeout(r, 1500));  // 1,5 s
+    return fetchRetry(url, tries - 1);
+  }
+}
 
-  // Limpieza: Date & Close válidos
-  const rows = data.filter(r => r.Date && r.Close);
-  localStorage.setItem(key, JSON.stringify(rows));
+/* ---------- 1 · Precios históricos ---------- */
+export async function fetchHistory (ticker, freq = 'daily') {
+  const key = `${ticker}_${freq}`;
+  if (localStorage[key]) {
+    /* ① Cache hit */
+    const rows = JSON.parse(localStorage[key]);
+    store.setPrices(ticker, rows);
+    return rows;
+  }
+
+  /* ② Cache miss → descargamos CSV Stooq */
+  const url = PROXY + encodeURIComponent(STQ_URL(ticker));
+  const res = await fetchRetry(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+
+  const csv = await res.text();
+
+  /* ③ Limpiar y parsear: devolvemos [{date:'YYYY-MM-DD', Close: n}] */
+  const rows = csv.trim().split('\n')
+    .slice(1)                         // quitamos cabecera
+    .map(line => {
+      const [d, o, h, l, c] = line.split(',');
+      return { date: d, Close: +c };
+    })
+    .filter(r => !isNaN(r.Close))     // quitamos huecos
+    .reverse();                       // ascendente
+
+  /* ④ Guardamos en cache + store */
+  localStorage[key] = JSON.stringify(rows);
+  store.setPrices(ticker, rows);
   return rows;
 }
 
-/* ---------- 2. Tasa libre de riesgo ---------- */
-export async function updateRiskFree() {
-  const input = document.getElementById('risk-free-rate');
-  input.placeholder = '…';
+/* ---------- 2 · Tasa libre de riesgo ---------- */
+export async function fetchRiskFree () {
+  if (store.state.rf) return store.state.rf;   // ya la tenemos
 
-  try {
-    const fred = 'https://fred.stlouisfed.org/graph/fredgraph.csv?id=DTB3';
-    const csv  = await fetch(PROXY(fred)).then(r => r.text());
-    const last = csv.trim().split('\n').pop().split(',')[1];
-    const rate = parseFloat(last);
-    if (!isNaN(rate)) { input.value = rate.toFixed(2); return; }
-  } catch { /* fall-through */ }
+  const url = PROXY + encodeURIComponent(RF_URL);
+  const res = await fetchRetry(url);
+  if (!res.ok) throw new Error(`RF HTTP ${res.status}`);
 
-  try {
-    const stooq = 'https://stooq.com/q/l/?s=%5EIRX.US&i=d';
-    const csv   = await fetch(PROXY(stooq)).then(r => r.text());
-    const close = parseFloat(csv.split('\n')[1].split(',')[4]);
-    if (!isNaN(close)) { input.value = (close/100).toFixed(2); return; }
-  } catch { /* ignore */ }
+  /* CSV: fecha,valor … tomamos la última fila válida */
+  const lines = (await res.text()).trim().split('\n');
+  const last  = lines[lines.length - 1].split(',');
+  const rfObj = { date: last[0], value: +last[1] / 100 }; // %→decimal
 
-  input.placeholder = '';
-  alert('No pude actualizar la tasa libre de riesgo.');
+  store.setRf(rfObj);
+  return rfObj;
 }
-// Hook ↻ cuando cargue la página
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('btn-rf-refresh')
-          .addEventListener('click', updateRiskFree);
 
-  // Llenar Rf apenas abra la app
-  updateRiskFree();
-});
+/* ---------- 3 · Batch para lista de tickers ---------- */
+export async function loadPricesFor (tickers) {
+  if (!Array.isArray(tickers) || tickers.length === 0) return;
+  document.body.classList.add('loading');        // spinner simple
+
+  try {
+    await Promise.all(tickers.map(t => fetchHistory(t, 'daily')));
+  } finally {
+    document.body.classList.remove('loading');
+  }
+}
