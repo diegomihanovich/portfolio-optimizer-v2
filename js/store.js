@@ -54,9 +54,29 @@ const store = (() => {
       new CustomEvent('paramsChanged', { detail: state.params })
     );
   };
+  /* ---------- 3.b · Helpers retro-compatibilidad ---------- */
+  const addTicker = (tkr) => {
+    tkr = tkr.trim().toUpperCase();
+    if (!tkr) return;
+    if (state.tickers.includes(tkr)) return;        // evita duplicados
+    state.tickers.push(tkr);
+    document.dispatchEvent(
+      new CustomEvent('tickersChanged', { detail: state.tickers })
+    );
+  };
+
+  const removeTicker = (tkr) => {
+    const idx = state.tickers.indexOf(tkr);
+    if (idx === -1) return;
+    state.tickers.splice(idx, 1);
+    document.dispatchEvent(
+      new CustomEvent('tickersChanged', { detail: state.tickers })
+    );
+  };
 
   /* ---------- 4 · API pública ---------- */
-  return { getState, setTickers, setPrices, setRf, setParams };
+   return { getState, setTickers, setPrices, setRf, setParams,
+           addTicker, removeTicker };
 
 })();
 
