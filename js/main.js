@@ -62,23 +62,13 @@ export function runOptimization() {
   showToast('Optimizando… (demo)', 'info');
   if (currentStep !== 3) goToStep(3);
 
-  // Rellena métricas con números aleatorios de demo
-  document.getElementById('metric-return').textContent     = `${(Math.random()*15+5).toFixed(1)}%`;
-  document.getElementById('metric-volatility').textContent = `${(Math.random()*20+8).toFixed(1)}%`;
-  document.getElementById('metric-sharpe').textContent     = (Math.random()*1+0.5).toFixed(2);
-  document.getElementById('metric-beta').textContent       = (Math.random()*0.8+0.7).toFixed(2);
-}
+  
 
 /* ---------- Eventos iniciales ---------- */
 document.addEventListener('DOMContentLoaded', () => {
   // Paso visible por defecto
   document.getElementById('step-1').style.display = 'block';
 
-  // Valores iniciales aleatorios (demo)
-  document.getElementById('avg-correlation').textContent =
-    (Math.random() * 0.5 + 0.1).toFixed(2);
-  document.getElementById('diversification-score-value').textContent =
-    Math.floor(Math.random() * 50 + 50);
 
   // Wire-up botones y controles
   document.getElementById('btn-optimize')?.addEventListener('click', runOptimization);
