@@ -11,7 +11,7 @@ const N_PORTFOLIOS = 5000;
 const RF = 0;                       // (dec.) actualizaremos luego con store.state.rf
 
 /* DOM refs */
-const chartDiv = document.getElementById('frontier-chart');
+const chartDiv = document.getElementById('efficient-frontier-chart');
 const metricRet   = document.getElementById('metric-return');
 const metricVol   = document.getElementById('metric-volatility');
 const metricSharpe= document.getElementById('metric-sharpe');
