@@ -1,6 +1,8 @@
 /* js/main.js – navegación + utilidades básicas
  ─────────────────────────────────────────── */
 
+import { fetchRiskFree } from './dataService.js';
+
 /* ---------- Estado ----------- */
 let currentStep = 1;
 
@@ -39,6 +41,12 @@ document.addEventListener('DOMContentLoaded', () => {
     import('./optimizer.js').then(m => m.runOptimization());
   });
 });
+
+document.getElementById('btn-rf-refresh')
+  .addEventListener('click', async () => {
+    const rf = await fetchRiskFree();
+    document.getElementById('risk-free-rate').value = rf.value.toFixed(4);
+  });
 
 /* ---------- Exponer a HTML ---- */
 window.goToStep          = goToStep;

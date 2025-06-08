@@ -59,7 +59,11 @@ console.warn('LocalStorage lleno, no se cachea', key);
 
 /* ---------- 2 · Tasa libre de riesgo ---------- */
 export async function fetchRiskFree () {
-  if (store.state.rf) return store.state.rf;   // ya la tenemos
+  if (store.state.rf) {
+    document.getElementById('risk-free-rate').value =
+      store.state.rf.value.toFixed(4);
+    return store.state.rf;   // ya la tenemos
+  }
 
   const url = PROXY + encodeURIComponent(RF_URL);
   const res = await fetchRetry(url);
@@ -71,6 +75,7 @@ export async function fetchRiskFree () {
   const rfObj = { date: last[0], value: +last[1] / 100 }; // %→decimal
 
   store.setRf(rfObj);
+  document.getElementById('risk-free-rate').value = rfObj.value.toFixed(4);
   return rfObj;
 }
 
