@@ -148,12 +148,28 @@ body{
             font-weight: bold;
         }
 
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); /* Reducido */
-            gap: 10px; /* Reducido */
-            margin-bottom: 15px; /* Reducido */
-        }
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); /* Reducido */
+    gap: 10px; /* Reducido */
+    margin-bottom: 15px; /* Reducido */
+}
+
+/* Tabla con asignaciones monetarias */
+.allocation-table {
+    margin-top: 10px;
+    font-size: 0.85rem;
+}
+.allocation-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.allocation-table td {
+    padding: 2px 4px;
+}
+.allocation-table tr:nth-child(even) {
+    background-color: #1E2128;
+}
 
         .metric-card {
             background-color: #1E2128;
