@@ -48,9 +48,13 @@ export async function fetchHistory (ticker, freq = 'daily') {
     .reverse();                       // ascendente
 
   /* ④ Guardamos en cache + store */
-  localStorage[key] = JSON.stringify(rows);
-  store.setPrices(ticker, rows);
-  return rows;
+ try {
+ localStorage[key] = JSON.stringify(rows);
+} catch (e) {
+console.warn('LocalStorage lleno, no se cachea', key);
+}
+    store.setPrices(ticker, rows);
+    return rows;
 }
 
 /* ---------- 2 · Tasa libre de riesgo ---------- */
