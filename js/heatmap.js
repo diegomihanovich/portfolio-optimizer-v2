@@ -16,6 +16,8 @@ const spanDiv = document.getElementById('diversification-score-value');
 /* 2. Re-dibujo bajo demanda */
 async function refreshHeatmap () {
   const { tickers, prices } = store.state;
+  const freq  = document.getElementById('data-frequency')?.value || 'daily';
+  const range = document.getElementById('data-range')?.value || '5y';
 
   /* Mostrar placeholder si hay <2 activos */
   if (tickers.length < 2) {
@@ -26,7 +28,7 @@ async function refreshHeatmap () {
   /* ¿Tenemos datos OHLC para todos?  Si no, descargamos. */
   const pending = tickers.filter(t => !prices[t]);
   if (pending.length) {
-    await loadPricesFor(pending);
+    await loadPricesFor(pending, freq, range);
     /* volveremos a entrar cuando pricesReady dispare de nuevo */
     return;
   }

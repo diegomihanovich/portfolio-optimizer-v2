@@ -7,7 +7,11 @@ import store from './store.js';
 
 /* ---------- 0 · Helpers ---------- */
 const PROXY = 'https://corsproxy.io/?';
-const STQ_URL = (tkr) => `https://stooq.com/q/d/l/?s=${tkr.toLowerCase()}.us&i=d`;
+const STQ_URL = (tkr, freq = 'daily') => {
+  const map = { daily: 'd', weekly: 'w', monthly: 'm' };
+  const i = map[freq] || 'd';
+  return `https://stooq.com/q/d/l/?s=${tkr.toLowerCase()}.us&i=${i}`;
+};
 const RF_URL  = 'https://fred.stlouisfed.org/graph/fredgraph.csv?id=DTB3';
 
 /* Wrapper fetch con retry (2 intentos) */
@@ -21,8 +25,8 @@ async function fetchRetry (url, tries = 2) {
 }
 
 /* ---------- 1 · Precios históricos ---------- */
-export async function fetchHistory (ticker, freq = 'daily') {
-  const key = `${ticker}_${freq}`;
+export async function fetchHistory (ticker, freq = 'daily', range = '5y') {
+  const key = `${ticker}_${freq}_${range}`;
   if (localStorage[key]) {
     /* ① Cache hit */
     const rows = JSON.parse(localStorage[key]);
@@ -31,14 +35,14 @@ export async function fetchHistory (ticker, freq = 'daily') {
   }
 
   /* ② Cache miss → descargamos CSV Stooq */
-  const url = PROXY + encodeURIComponent(STQ_URL(ticker));
+  const url = PROXY + encodeURIComponent(STQ_URL(ticker, freq));
   const res = await fetchRetry(url);
   if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
 
   const csv = await res.text();
 
   /* ③ Limpiar y parsear: devolvemos [{date:'YYYY-MM-DD', Close: n}] */
-  const rows = csv.trim().split('\n')
+  let rows = csv.trim().split('\n')
     .slice(1)                         // quitamos cabecera
     .map(line => {
       const [d, o, h, l, c] = line.split(',');
@@ -46,6 +50,13 @@ export async function fetchHistory (ticker, freq = 'daily') {
     })
     .filter(r => !isNaN(r.Close))     // quitamos huecos
     .reverse();                       // ascendente
+
+  const factor = freq === 'weekly' ? 52
+                : freq === 'monthly' ? 12
+                : 252;
+  const years = parseInt(range) || 5;
+  const limit = years * factor;
+  rows = rows.slice(-limit);
 
   /* ④ Guardamos en cache + store */
  try {
@@ -80,12 +91,12 @@ export async function fetchRiskFree () {
 }
 
 /* ---------- 3 · Batch para lista de tickers ---------- */
-export async function loadPricesFor (tickers) {
+export async function loadPricesFor (tickers, freq = 'daily', range = '5y') {
   if (!Array.isArray(tickers) || tickers.length === 0) return;
   document.body.classList.add('loading');        // spinner simple
 
   try {
-    await Promise.all(tickers.map(t => fetchHistory(t, 'daily')));
+    await Promise.all(tickers.map(t => fetchHistory(t, freq, range)));
   } finally {
     document.body.classList.remove('loading');
   }

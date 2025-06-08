@@ -21,13 +21,15 @@ export async function runOptimization () {
 
   /* 1. Verifica tickers seleccionados y descarga OHLC faltantes */
   const { tickers, prices, rf } = store.state;
+  const freq  = document.getElementById('data-frequency')?.value || 'daily';
+  const range = document.getElementById('data-range')?.value || '5y';
   if (tickers.length < 2) {
     alert('Añade al menos 2 activos antes de optimizar.');   // UX rápida
     return;
   }
 
   const pending = tickers.filter(t => !prices[t]);
-  if (pending.length) await loadPricesFor(pending);
+  if (pending.length) await loadPricesFor(pending, freq, range);
 
   /* 2. Arma series de retornos log */
   const series = tickers.map(t => logReturns(prices[t]));
@@ -35,9 +37,12 @@ export async function runOptimization () {
   const aligned = series.map(s => s.slice(-minLen));          // misma longitud
 
   /* 3. Estadísticos anuales */
-  const μ = aligned.map(s => mean(s) * 252);                  // retorno esp.
+  const factor = freq === 'weekly' ? 52
+                : freq === 'monthly' ? 12
+                : 252;
+  const μ = aligned.map(s => mean(s) * factor);               // retorno esp.
   const Σ = aligned.map(a =>
-              aligned.map(b => covariance(a, b) * 252));      // matriz cov.
+              aligned.map(b => covariance(a, b) * factor));   // matriz cov.
 
   const rfVal = rf?.value || 0;
 
