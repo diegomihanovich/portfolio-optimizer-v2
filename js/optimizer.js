@@ -68,6 +68,17 @@ export async function runOptimization () {
   /* 5. Selecciona portafolio Máx-Sharpe */
   const best = results.reduce((a,b)=> b.sharpe > a.sharpe ? b : a);
 
+  /* 5.b Filtra por tolerancia de riesgo ------------------------------- */
+  const slider = document.getElementById('risk-slider');
+  const pct     = slider ? +slider.value : 100;           // 0-100
+  const minVol  = Math.min(...results.map(r=>r.vol));
+  const maxVol  = Math.max(...results.map(r=>r.vol));
+  const target  = minVol + (pct/100) * (maxVol - minVol);
+  const subset  = results.filter(r => r.vol <= target);
+  const choice  = subset.length
+    ? subset.reduce((a,b)=> b.sharpe > a.sharpe ? b : a)
+    : best;
+
   /* 6. Scatter + estrellita ---------------------------------------------- */
   const scat = {
     x: results.map(r => r.vol * 100),
@@ -78,7 +89,7 @@ export async function runOptimization () {
   };
 
   const star = {
-    x:[best.vol*100], y:[best.ret*100],
+    x:[choice.vol*100], y:[choice.ret*100],
     mode:'markers+text', type:'scatter',
     marker:{size:12,symbol:'star',color:'gold'},
     text:['★ max sharpe'], textposition:'top center'
@@ -92,14 +103,14 @@ export async function runOptimization () {
   );
 
   /* 7. KPI en pantalla */
-  metricRet.textContent = (best.ret*100).toFixed(1)+'%';
-  metricVol.textContent = (best.vol*100).toFixed(1)+'%';
-  metricShr.textContent = best.sharpe.toFixed(2);
+  metricRet.textContent = (choice.ret*100).toFixed(1)+'%';
+  metricVol.textContent = (choice.vol*100).toFixed(1)+'%';
+  metricShr.textContent = choice.sharpe.toFixed(2);
 
   /* 8. Doughnut de pesos -------------------------------------------------- */
   const donut = [{
     labels: tickers,
-    values: best.w.map(w=>+(w*100).toFixed(1)),
+    values: choice.w.map(w=>+(w*100).toFixed(1)),
     type:'pie', hole:0.5, textinfo:'label+percent'
   }];
 
