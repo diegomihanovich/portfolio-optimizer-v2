@@ -215,12 +215,5 @@
 
 <!-- heat-map (requiere Plotly + stats + dataService ya cargados) -->
 <script type="module" src="js/heatmap.js"></script>
-<script type="module">
-  document.getElementById('btn-optimize')
-          .addEventListener('click', () => {
-            import('./js/optimizer.js')
-              .then(m => m.runOptimization());
-          });
-</script>
 </body>
 </html>
