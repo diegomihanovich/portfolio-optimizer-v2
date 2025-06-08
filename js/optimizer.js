@@ -97,25 +97,25 @@ export async function runOptimization () {
 
   Plotly.newPlot(chartDiv, [scat, star], layout, {displayModeBar:false});
 
-  /* 7. Actualiza métricas */
-  metricRet.textContent    = (bestSharpe.ret * 100).toFixed(1) + '%';
-  metricVol.textContent    = (bestSharpe.vol * 100).toFixed(1) + '%';
-  metricSharpe.textContent = bestSharpe.sharpe.toFixed(2);
-}
-/* 8. Doughnut de pesos */
+ /* 7. KPI óptimo */
+metricRet.textContent    = (bestSharpe.ret * 100).toFixed(1) + '%';
+metricVol.textContent    = (bestSharpe.vol * 100).toFixed(1) + '%';
+metricSharpe.textContent = bestSharpe.sharpe.toFixed(2);
+
+/* 8. Doughnut pesos */
 const weightsFig = [{
   labels: tickers,
-  values: bestSharpe.w.map(w => +(w * 100).toFixed(1)), // array de porcentajes
-  type: 'pie',
-  hole: 0.5,
+  values: bestSharpe.w.map(w => +(w * 100).toFixed(1)),
+  type  : 'pie',
+  hole  : 0.5,
   textinfo: 'label+percent'
 }];
 
 Plotly.newPlot(
-  'portfolio-weights-chart',    // id del div en Paso-3
+  'portfolio-weights-chart',
   weightsFig,
-  { margin: { t: 10, l: 10, r: 10, b: 10 }, showlegend: false },
-  { displayModeBar: false }
+  { margin:{t:10,l:10,r:10,b:10}, showlegend:false },
+  { displayModeBar:false }
 );
 
 /* Exponer función global para el botón “Optimizar”  */
