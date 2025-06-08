@@ -44,12 +44,20 @@ export async function runOptimization () {
   /* 4. Monte-Carlo -------------------------------------------------------- */
   const results = [];                                         // guarda KPIs
 
+  const capInput = document.getElementById('max-asset-percentage');
+  let cap = capInput ? +capInput.value / 100 : 1;
+  if (!isFinite(cap) || cap <= 0) cap = 1;
+  if (cap * tickers.length < 1) cap = 1;        // fallback if impossible
+
   for (let k = 0; k < N_PORTFOLIOS; k++) {
 
-    // 4.a Pesos aleatorios que sumen 1
-    let w = tickers.map(() => Math.random());
-    const sum = w.reduce((s, x) => s + x, 0);
-    w = w.map(x => x / sum);
+    // 4.a Pesos aleatorios que sumen 1 respetando el tope
+    let w;
+    do {
+      w = tickers.map(() => Math.random());
+      const sum = w.reduce((s, x) => s + x, 0);
+      w = w.map(x => x / sum);
+    } while (w.some(x => x > cap));
 
     // 4.b Retorno, varianza, σ, Sharpe
     const ret = w.reduce((s, x, i) => s + x * μ[i], 0);
