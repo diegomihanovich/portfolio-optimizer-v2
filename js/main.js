@@ -1,7 +1,5 @@
 /* js/main.js – navegación + utilidades básicas
-   ─────────────────────────────────────────── */
-
-import { showToast } from './ui-tickers.js';   // o quita si no hace falta
+ ─────────────────────────────────────────── */
 
 /* ---------- Estado ----------- */
 let currentStep = 1;
@@ -21,6 +19,17 @@ export const updateSliderValue = val =>
 /* ---------- Collapse toggle --- */
 export const toggleCollapse = (id, open) =>
   (document.getElementById(id).style.display = open ? 'block' : 'none');
+
+/* ---------- Toast sencillo ---------- */
+export function showToast(msg, type = 'info') {
+  const el = document.getElementById('app-toast');
+  el.textContent = msg;
+  if      (type === 'warning') { el.style.background = '#FFC107'; el.style.color = '#333'; }
+  else if (type === 'error')   { el.style.background = '#DC3545'; el.style.color = '#fff'; }
+  else                          { el.style.background = '#7F5AF0'; el.style.color = '#fff'; }
+  el.style.display = 'block';
+  setTimeout(() => (el.style.display = 'none'), 3500);
+}
 
 /* ---------- Eventos iniciales - */
 document.addEventListener('DOMContentLoaded', () => {
