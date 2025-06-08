@@ -102,6 +102,21 @@ export async function runOptimization () {
   metricVol.textContent    = (bestSharpe.vol * 100).toFixed(1) + '%';
   metricSharpe.textContent = bestSharpe.sharpe.toFixed(2);
 }
+/* 8. Doughnut de pesos */
+const weightsFig = [{
+  labels: tickers,
+  values: bestSharpe.w.map(w => +(w * 100).toFixed(1)), // array de porcentajes
+  type: 'pie',
+  hole: 0.5,
+  textinfo: 'label+percent'
+}];
+
+Plotly.newPlot(
+  'portfolio-weights-chart',    // id del div en Paso-3
+  weightsFig,
+  { margin: { t: 10, l: 10, r: 10, b: 10 }, showlegend: false },
+  { displayModeBar: false }
+);
 
 /* Exponer función global para el botón “Optimizar”  */
 window.runOptimization = runOptimization;
