@@ -44,4 +44,4 @@ document.addEventListener('DOMContentLoaded', () => {
 window.goToStep          = goToStep;
 window.updateSliderValue = updateSliderValue;
 window.toggleCollapse    = toggleCollapse;
-
+window.showToast = showToast;
