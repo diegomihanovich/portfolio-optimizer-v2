@@ -4,6 +4,7 @@
 ----------------------------------------------------------- */
 
 import store from './store.js';
+import { showToast } from './main.js';
 
 /* ---------- 0 · Helpers ---------- */
 const PROXY = 'https://corsproxy.io/?';
@@ -35,37 +36,42 @@ export async function fetchHistory (ticker, freq = 'daily', range = '5y') {
   }
 
   /* ② Cache miss → descargamos CSV Stooq */
-  const url = PROXY + encodeURIComponent(STQ_URL(ticker, freq));
-  const res = await fetchRetry(url);
-  if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+  try {
+    const url = PROXY + encodeURIComponent(STQ_URL(ticker, freq));
+    const res = await fetchRetry(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
 
-  const csv = await res.text();
+    const csv = await res.text();
 
-  /* ③ Limpiar y parsear: devolvemos [{date:'YYYY-MM-DD', Close: n}] */
-  let rows = csv.trim().split('\n')
-    .slice(1)                         // quitamos cabecera
-    .map(line => {
-      const [d, o, h, l, c] = line.split(',');
-      return { date: d, Close: +c };
-    })
-    .filter(r => !isNaN(r.Close))     // quitamos huecos
-    .reverse();                       // ascendente
+    /* ③ Limpiar y parsear: devolvemos [{date:'YYYY-MM-DD', Close: n}] */
+    let rows = csv.trim().split('\n')
+      .slice(1)                         // quitamos cabecera
+      .map(line => {
+        const [d, o, h, l, c] = line.split(',');
+        return { date: d, Close: +c };
+      })
+      .filter(r => !isNaN(r.Close))     // quitamos huecos
+      .reverse();                       // ascendente
 
-  const factor = freq === 'weekly' ? 52
-                : freq === 'monthly' ? 12
-                : 252;
-  const years = parseInt(range) || 5;
-  const limit = years * factor;
-  rows = rows.slice(-limit);
+    const factor = freq === 'weekly' ? 52
+                  : freq === 'monthly' ? 12
+                  : 252;
+    const years = parseInt(range) || 5;
+    const limit = years * factor;
+    rows = rows.slice(-limit);
 
-  /* ④ Guardamos en cache + store */
- try {
- localStorage[key] = JSON.stringify(rows);
-} catch (e) {
-console.warn('LocalStorage lleno, no se cachea', key);
-}
+    /* ④ Guardamos en cache + store */
+    try {
+      localStorage[key] = JSON.stringify(rows);
+    } catch (e) {
+      console.warn('LocalStorage lleno, no se cachea', key);
+    }
     store.setPrices(ticker, rows);
     return rows;
+  } catch (err) {
+    showToast('Error al descargar datos', 'error');
+    throw err;
+  }
 }
 
 /* ---------- 2 · Tasa libre de riesgo ---------- */
@@ -76,18 +82,23 @@ export async function fetchRiskFree () {
     return store.state.rf;   // ya la tenemos
   }
 
-  const url = PROXY + encodeURIComponent(RF_URL);
-  const res = await fetchRetry(url);
-  if (!res.ok) throw new Error(`RF HTTP ${res.status}`);
+  try {
+    const url = PROXY + encodeURIComponent(RF_URL);
+    const res = await fetchRetry(url);
+    if (!res.ok) throw new Error(`RF HTTP ${res.status}`);
 
-  /* CSV: fecha,valor … tomamos la última fila válida */
-  const lines = (await res.text()).trim().split('\n');
-  const last  = lines[lines.length - 1].split(',');
-  const rfObj = { date: last[0], value: +last[1] / 100 }; // %→decimal
+    /* CSV: fecha,valor … tomamos la última fila válida */
+    const lines = (await res.text()).trim().split('\n');
+    const last  = lines[lines.length - 1].split(',');
+    const rfObj = { date: last[0], value: +last[1] / 100 }; // %→decimal
 
-  store.setRf(rfObj);
-  document.getElementById('risk-free-rate').value = rfObj.value.toFixed(4);
-  return rfObj;
+    store.setRf(rfObj);
+    document.getElementById('risk-free-rate').value = rfObj.value.toFixed(4);
+    return rfObj;
+  } catch (err) {
+    showToast('Error al descargar datos', 'error');
+    throw err;
+  }
 }
 
 /* ---------- 3 · Batch para lista de tickers ---------- */
