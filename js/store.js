@@ -12,8 +12,10 @@ const store = (() => {
     rf      : null,        // e.g. { date:'2025-06-01', value:0.0423 }
     max     : 12,          // tope visual para ui-tickers
     params  : {
-      maxWeight : 1,       // límite % por activo (1 → 100 %)
-      rebalance : false    // rebalanceo automático
+      maxWeight    : 1,          // límite % por activo (1 → 100 %)
+      rebalance    : false,      // rebalanceo automático
+      rebalanceFreq: 'quarterly',// "quarterly" | "annually"
+      defensive    : false       // incluir activos defensivos
     }
   };
 
