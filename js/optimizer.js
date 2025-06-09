@@ -5,6 +5,7 @@
 import store             from './store.js';
 import { loadPricesFor } from './dataService.js';
 import { logReturns, mean, covariance } from './stats.js';
+import { showToast }     from './main.js';
 
 /* Config */
 const N_PORTFOLIOS = 5000;
@@ -91,6 +92,22 @@ export async function runOptimization () {
   const choice  = subset.length
     ? subset.reduce((a,b)=> b.sharpe > a.sharpe ? b : a)
     : best;
+
+  /* 5.c Calcular asignaciones en moneda ------------------------------- */
+  const allocBox = document.getElementById('allocation-container');
+  const invInput = document.getElementById('investment-amount');
+  const capital  = invInput ? +invInput.value : 0;
+  if (!isFinite(capital) || capital <= 0) {
+    allocBox && (allocBox.innerHTML = '');
+    if (invInput && invInput.value) {
+      showToast('Ingrese un monto de inversión válido', 'warning');
+    }
+  } else if (allocBox) {
+    const rows = tickers.map((t, i) =>
+      `<tr><td>${t}</td><td>${(capital * choice.w[i]).toFixed(2)}</td></tr>`
+    ).join('');
+    allocBox.innerHTML = `<table class="alloc-table"><tbody>${rows}</tbody></table>`;
+  }
 
   /* 6. Scatter + estrellita ---------------------------------------------- */
   const scat = {
