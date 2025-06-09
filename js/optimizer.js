@@ -21,7 +21,7 @@ const metricShr = document.getElementById('metric-sharpe');
 export async function runOptimization () {
 
   /* 1. Verifica tickers seleccionados y descarga OHLC faltantes */
-  const { tickers, prices, rf } = store.state;
+  const { tickers, prices, rf, params } = store.state;
   const freq  = document.getElementById('data-frequency')?.value || 'daily';
   const range = document.getElementById('data-range')?.value || '5y';
   if (tickers.length < 2) {
@@ -46,6 +46,10 @@ export async function runOptimization () {
               aligned.map(b => covariance(a, b) * factor));   // matriz cov.
 
   const rfVal = rf?.value || 0;
+
+  // Configuraciones adicionales (rebalanceo, activos defensivos, etc.)
+  const { rebalance, rebalanceFreq, defensive } = params;
+  console.log('Params:', { rebalance, rebalanceFreq, defensive });
 
   /* 4. Monte-Carlo -------------------------------------------------------- */
   const results = [];                                         // guarda KPIs

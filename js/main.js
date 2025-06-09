@@ -2,6 +2,7 @@
  ─────────────────────────────────────────── */
 
 import { fetchRiskFree } from './dataService.js';
+import store from './store.js';
 
 /* ---------- Estado ----------- */
 let currentStep = 1;
@@ -39,6 +40,28 @@ document.addEventListener('DOMContentLoaded', () => {
   // El botón Optimizar importa optimizer.js dinámicamente
   document.getElementById('btn-optimize').addEventListener('click', () => {
     import('./optimizer.js').then(m => m.runOptimization());
+  });
+
+  const rebalanceChk = document.getElementById('rebalancing');
+  const freqSel      = document.getElementById('rebalancing-frequency');
+  const defensiveChk = document.getElementById('include-defensive-assets');
+
+  store.setParams({
+    rebalance: rebalanceChk?.checked || false,
+    rebalanceFreq: freqSel?.value || 'quarterly',
+    defensive: defensiveChk?.checked || false
+  });
+
+  rebalanceChk?.addEventListener('change', e => {
+    store.setParams({ rebalance: e.target.checked });
+  });
+
+  freqSel?.addEventListener('change', e => {
+    store.setParams({ rebalanceFreq: e.target.value });
+  });
+
+  defensiveChk?.addEventListener('change', e => {
+    store.setParams({ defensive: e.target.checked });
   });
 });
 
