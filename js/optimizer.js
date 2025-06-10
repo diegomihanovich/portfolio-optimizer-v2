@@ -16,6 +16,7 @@ const donutDiv  = document.getElementById('portfolio-weights-chart');
 const metricRet = document.getElementById('metric-return');
 const metricVol = document.getElementById('metric-volatility');
 const metricShr = document.getElementById('metric-sharpe');
+const metricBeta = document.getElementById('metric-beta');   // 🆕
 
 /* Función principal -------------------------------------------------------- */
 export async function runOptimization () {
@@ -140,6 +141,34 @@ export async function runOptimization () {
   metricRet.textContent = (choice.ret*100).toFixed(1)+'%';
   metricVol.textContent = (choice.vol*100).toFixed(1)+'%';
   metricShr.textContent = choice.sharpe.toFixed(2);
+
+      /* === 7.b  Beta (sensibilidad al mercado) =========================== */
+  try {
+    const mktTkr = 'SPY';                 // ETF S&P 500, proxy de mercado
+    if (!prices[mktTkr]) {
+      // Descargamos si aún no está en cache
+      await loadPricesFor([mktTkr], freq, range);
+    }
+
+    /* Series de retornos alineadas ----------------------------------- */
+    const mktRets = logReturns(prices[mktTkr]).slice(-minLen);  // misma longitud
+    const portRets = [];                                         // Rp(t) = Σ w·ri
+    for (let i = 0; i < minLen; i++) {
+      let r = 0;
+      for (let j = 0; j < tickers.length; j++) r += choice.w[j] * aligned[j][i];
+      portRets.push(r);
+    }
+
+    /* β = cov(Rp, Rm) / var(Rm) -------------------------------------- */
+    const beta = covariance(portRets, mktRets) /
+                 covariance(mktRets, mktRets);
+
+    metricBeta.textContent = beta.toFixed(2);
+  } catch (err) {
+    console.error('Error calc β:', err);
+    metricBeta.textContent = '--';
+  }
+
 
   /* 8. Doughnut de pesos -------------------------------------------------- */
   const donut = [{
