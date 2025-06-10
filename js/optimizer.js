@@ -144,7 +144,7 @@ export async function runOptimization () {
 
       /* === 7.b  Beta (sensibilidad al mercado) =========================== */
   try {
-    const mktTkr = 'SPY';                 // ETF S&P 500, proxy de mercado
+    const mktTkr = '^spx';       // Índice S&P 500 en Stooq   
     if (!prices[mktTkr]) {
       // Descargamos si aún no está en cache
       await loadPricesFor([mktTkr], freq, range);
