@@ -9,9 +9,12 @@ import { showToast } from './main.js';
 /* ---------- 0 · Helpers ---------- */
 const PROXY = 'https://corsproxy.io/?';
 const STQ_URL = (tkr, freq = 'daily') => {
-  const map = { daily: 'd', weekly: 'w', monthly: 'm' };
-  const i = map[freq] || 'd';
-  return `https://stooq.com/q/d/l/?s=${tkr.toLowerCase()}.us&i=${i}`;
+  const map   = { daily: 'd', weekly: 'w', monthly: 'm' };
+  const i     = map[freq] || 'd';
+  const clean = tkr.toLowerCase();
+  const needsSuffix = !clean.startsWith('^') && !clean.includes('.');
+  const symbol = needsSuffix ? `${clean}.us` : clean;   // ← ajuste clave
+  return `https://stooq.com/q/d/l/?s=${symbol}&i=${i}`;
 };
 const RF_URL  = 'https://fred.stlouisfed.org/graph/fredgraph.csv?id=DTB3';
 
