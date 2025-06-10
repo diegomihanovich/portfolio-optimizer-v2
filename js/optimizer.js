@@ -142,13 +142,31 @@ export async function runOptimization () {
   metricVol.textContent = (choice.vol*100).toFixed(1)+'%';
   metricShr.textContent = choice.sharpe.toFixed(2);
 
-      /* === 7.b  Beta (sensibilidad al mercado) =========================== */
-  try {
-    const mktTkr = '^spx';       // Índice S&P 500 en Stooq   
-    if (!prices[mktTkr]) {
-      // Descargamos si aún no está en cache
-      await loadPricesFor([mktTkr], freq, range);
-    }
+     /* === 7.b  Beta (sensibilidad al mercado) =========================== */
+try {
+  const mktTkr = '^spx';                           // índice S&P 500
+  if (!prices[mktTkr]) await loadPricesFor([mktTkr], freq, range);
+
+  /* Retornos alineados: usamos la misma longitud más corta ---------- */
+  const mktRetsFull  = logReturns(prices[mktTkr]);
+  const len          = Math.min(minLen, mktRetsFull.length);
+  const mktRets      = mktRetsFull.slice(-len);
+
+  const portRets = [];                             // Rp(t) = Σ w·ri
+  for (let i = 0; i < len; i++) {
+    let r = 0;
+    for (let j = 0; j < tickers.length; j++) r += choice.w[j] * aligned[j][aligned[j].length - len + i];
+    portRets.push(r);
+  }
+
+  const beta = covariance(portRets, mktRets) /
+               covariance(mktRets, mktRets);
+
+  metricBeta.textContent = beta.toFixed(2);
+} catch (err) {
+  console.error('Error calc β:', err);
+  metricBeta.textContent = '--';
+}
 
     /* Series de retornos alineadas ----------------------------------- */
     const mktRets = logReturns(prices[mktTkr]).slice(-minLen);  // misma longitud
