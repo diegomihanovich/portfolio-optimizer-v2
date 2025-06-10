@@ -144,21 +144,25 @@ export async function runOptimization () {
 
      /* === 7.b  Beta (sensibilidad al mercado) =========================== */
 try {
-  const mktTkr = '^spx';                           // índice S&P 500
+  const mktTkr = '^spx';                     // Índice S&P 500 (Stooq)
   if (!prices[mktTkr]) await loadPricesFor([mktTkr], freq, range);
 
-  /* Retornos alineados: usamos la misma longitud más corta ---------- */
-  const mktRetsFull  = logReturns(prices[mktTkr]);
-  const len          = Math.min(minLen, mktRetsFull.length);
-  const mktRets      = mktRetsFull.slice(-len);
+  /* 1. Retornos alineados ------------------------------------------ */
+  const mktFull = logReturns(prices[mktTkr]);
+  const len     = Math.min(minLen, mktFull.length);   // ¡clave!
+  const mktRets = mktFull.slice(-len);                // últimos “len” puntos
 
-  const portRets = [];                             // Rp(t) = Σ w·ri
+  const portRets = [];                                // Rp(t) = Σ w·ri
   for (let i = 0; i < len; i++) {
     let r = 0;
-    for (let j = 0; j < tickers.length; j++) r += choice.w[j] * aligned[j][aligned[j].length - len + i];
+    for (let j = 0; j < tickers.length; j++) {
+      const arr = aligned[j];
+      r += choice.w[j] * arr[arr.length - len + i];
+    }
     portRets.push(r);
   }
 
+  /* 2. β = cov(Rp, Rm) / var(Rm) ---------------------------------- */
   const beta = covariance(portRets, mktRets) /
                covariance(mktRets, mktRets);
 
@@ -167,25 +171,7 @@ try {
   console.error('Error calc β:', err);
   metricBeta.textContent = '--';
 }
-
-    /* Series de retornos alineadas ----------------------------------- */
-    const mktRets = logReturns(prices[mktTkr]).slice(-minLen);  // misma longitud
-    const portRets = [];                                         // Rp(t) = Σ w·ri
-    for (let i = 0; i < minLen; i++) {
-      let r = 0;
-      for (let j = 0; j < tickers.length; j++) r += choice.w[j] * aligned[j][i];
-      portRets.push(r);
-    }
-
-    /* β = cov(Rp, Rm) / var(Rm) -------------------------------------- */
-    const beta = covariance(portRets, mktRets) /
-                 covariance(mktRets, mktRets);
-
-    metricBeta.textContent = beta.toFixed(2);
-  } catch (err) {
-    console.error('Error calc β:', err);
-    metricBeta.textContent = '--';
-  }
+/* 8. Doughnut de pesos --------------------------------------------- */
 
 
   /* 8. Doughnut de pesos -------------------------------------------------- */
